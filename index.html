@@ -1,0 +1,4479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Memória Algébrica 1.18</title>
+
+<style>
+*{
+ box-sizing:border-box;
+ margin:0;
+ padding:0;
+ font-family:Arial,Helvetica,sans-serif;
+}
+
+:root{
+ --bg:#f5f7fb;
+ --card:#ffffff;
+ --text:#202534;
+ --muted:#7b8190;
+ --primary:#5865f2;
+ --primaryDark:#4652d8;
+ --green:#2ecc71;
+ --red:#e74c3c;
+ --yellow:#f1b80b;
+ --purple:#8e44ad;
+ --shadow:0 8px 28px rgba(32,37,52,.08);
+}
+
+html,body{
+ width:100%;
+ min-height:100%;
+}
+
+body{
+ background:var(--bg);
+ color:var(--text);
+ overflow-x:hidden;
+}
+
+button{
+ border:0;
+ border-radius:14px;
+ padding:13px 18px;
+ font-size:15px;
+ font-weight:800;
+ cursor:pointer;
+ user-select:none;
+ -webkit-user-select:none;
+ touch-action:manipulation;
+ transition:
+  transform .12s ease,
+  filter .12s ease,
+  box-shadow .12s ease;
+}
+
+button:active{
+ transform:scale(.96);
+}
+
+button:hover{
+ filter:brightness(.97);
+}
+
+button:disabled{
+ opacity:.45;
+ cursor:not-allowed;
+}
+
+.screen{
+ display:none;
+ position:fixed;
+ inset:0;
+ width:100%;
+ height:100%;
+ align-items:center;
+ justify-content:center;
+ flex-direction:column;
+ overflow-y:auto;
+}
+
+#menu-screen{
+ display:flex;
+ background:
+  radial-gradient(circle at 50% 15%,#eef0ff 0,#fff 42%);
+}
+
+#game-screen{
+ justify-content:flex-start;
+ padding:12px 10px 18px;
+ background:var(--bg);
+}
+
+#store-screen,
+#learn-screen,
+#stats-screen,
+#missions-screen,
+#controls-screen,
+#mode-screen{
+ background:var(--bg);
+ padding:22px 12px;
+}
+
+.coins{
+ position:fixed;
+ top:12px;
+ right:12px;
+ z-index:1000;
+ background:white;
+ padding:9px 14px;
+ border-radius:999px;
+ box-shadow:var(--shadow);
+ color:#c79200;
+ font-weight:900;
+ font-size:14px;
+}
+
+.logo{
+ font-size:clamp(42px,10vw,68px);
+ line-height:.9;
+ text-align:center;
+ font-weight:1000;
+ letter-spacing:-3px;
+ color:#242a3a;
+}
+
+.logo span{
+ color:var(--primary);
+}
+
+.subtitle{
+ margin:17px auto 27px;
+ color:var(--muted);
+ text-align:center;
+ max-width:510px;
+ line-height:1.55;
+ padding:0 18px;
+ font-size:15px;
+}
+
+.menu-buttons{
+ width:min(90%,370px);
+ display:flex;
+ flex-direction:column;
+ gap:9px;
+}
+
+.menu-buttons button{
+ width:100%;
+ min-height:50px;
+}
+
+.play{
+ background:var(--primary);
+ color:white;
+ box-shadow:0 6px 16px rgba(88,101,242,.22);
+}
+
+.play:hover{
+ background:var(--primaryDark);
+}
+
+.store{
+ background:#3498db;
+ color:white;
+}
+
+.learn{
+ background:#f39c12;
+ color:white;
+}
+
+.stats{
+ background:#8e44ad;
+ color:white;
+}
+
+.missions{
+ background:#e67e22;
+ color:white;
+}
+
+.controlsBtn{
+ background:#34495e;
+ color:white;
+}
+
+.moreBtn{
+ background:#303952;
+ color:white;
+}
+
+.back{
+ background:#e74c3c;
+ color:white;
+}
+
+.more-buttons{
+ width:100%;
+ display:none;
+ flex-direction:column;
+ gap:9px;
+}
+
+.more-buttons.open{
+ display:flex;
+}
+
+.version{
+ position:fixed;
+ right:14px;
+ bottom:10px;
+ color:#a0a4ae;
+ font-size:11px;
+ font-weight:bold;
+}
+
+.page-title{
+ font-size:30px;
+ margin-bottom:16px;
+ text-align:center;
+ letter-spacing:-1px;
+}
+
+.cardbox{
+ width:min(94%,600px);
+ background:var(--card);
+ padding:21px;
+ border-radius:22px;
+ margin:6px;
+ text-align:center;
+ box-shadow:var(--shadow);
+}
+
+.cardbox p{
+ color:var(--muted);
+ line-height:1.5;
+ margin:8px 0;
+}
+
+.example{
+ background:#f3f4fa;
+ padding:19px;
+ border-radius:16px;
+ font-size:30px;
+ font-weight:900;
+ margin:14px 0;
+ color:#303952;
+}
+
+/* MODO */
+
+.mode-list{
+ width:min(94%,620px);
+}
+
+.mode{
+ background:white;
+ margin:8px 0;
+ padding:17px;
+ border-radius:18px;
+ cursor:pointer;
+ border:2px solid transparent;
+ box-shadow:0 5px 18px rgba(32,37,52,.05);
+ text-align:left;
+ transition:.15s;
+}
+
+.mode:hover{
+ transform:translateY(-1px);
+}
+
+.mode.selected{
+ border-color:var(--primary);
+ background:#f7f8ff;
+ box-shadow:0 6px 20px rgba(88,101,242,.13);
+}
+
+.mode-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
+}
+
+.mode-name{
+ font-size:17px;
+ font-weight:900;
+}
+
+.mode-check{
+ width:22px;
+ height:22px;
+ border-radius:50%;
+ border:2px solid #d8dbe4;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:12px;
+ color:transparent;
+ flex-shrink:0;
+}
+
+.mode.selected .mode-check{
+ background:var(--primary);
+ border-color:var(--primary);
+ color:white;
+}
+
+.mode p{
+ margin-top:7px;
+ color:var(--muted);
+ line-height:1.4;
+ font-size:14px;
+}
+
+.mode-buttons{
+ width:min(94%,620px);
+ display:flex;
+ gap:8px;
+ margin-top:10px;
+}
+
+.mode-buttons button{
+ flex:1;
+}
+
+/* JOGO */
+
+.game-header{
+ width:min(96%,900px);
+ background:white;
+ border-radius:18px;
+ padding:11px 15px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ box-shadow:var(--shadow);
+ flex-shrink:0;
+}
+
+.level{
+ font-size:18px;
+ font-weight:900;
+}
+
+.score{
+ color:var(--muted);
+ font-size:13px;
+ margin-top:3px;
+}
+
+.timer{
+ font-weight:900;
+ font-size:18px;
+}
+
+.timer-container{
+ width:min(96%,900px);
+ height:8px;
+ min-height:8px;
+ flex:0 0 8px;
+ display:block;
+ background:#e1e4eb;
+ border-radius:20px;
+ overflow:hidden;
+ margin:8px 0 10px;
+ position:relative;
+ visibility:visible;
+ opacity:1;
+}
+
+#timer-bar{
+ display:block;
+ width:100%;
+ height:8px;
+ min-height:8px;
+ background:var(--green);
+ border-radius:20px;
+ transition:width .15s linear,background .2s;
+}
+
+.grid{
+ width:min(96%,900px);
+ display:grid;
+ gap:8px;
+ margin:auto;
+}
+
+.card{
+ width:100%;
+ aspect-ratio:3/4;
+ perspective:1000px;
+ cursor:pointer;
+ touch-action:manipulation;
+}
+
+.card-inner{
+ width:100%;
+ height:100%;
+ position:relative;
+ transform-style:preserve-3d;
+ transition:transform .55s cubic-bezier(.2,.7,.2,1);
+}
+
+.card.flipped .card-inner{
+ transform:rotateY(180deg);
+}
+
+.card-front,
+.card-back{
+ position:absolute;
+ inset:0;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ border-radius:15px;
+ backface-visibility:hidden;
+ box-shadow:0 5px 13px rgba(32,37,52,.12);
+ text-align:center;
+ padding:5px;
+}
+
+.card-front{
+ background:linear-gradient(145deg,#303952,#202532);
+ color:white;
+ font-size:29px;
+ font-weight:900;
+}
+
+.card-front::after{
+ content:"";
+ position:absolute;
+ width:38%;
+ height:38%;
+ border:2px solid rgba(255,255,255,.1);
+ border-radius:50%;
+}
+
+.card-back{
+ transform:rotateY(180deg);
+ background:white;
+ border:3px solid #303952;
+ color:#303952;
+ font-size:clamp(15px,4vw,27px);
+ font-weight:900;
+}
+
+.card.matched .card-back{
+ background:#2ecc71;
+ border-color:#2ecc71;
+ color:white;
+}
+
+.card.hint{
+ animation:pulse .55s infinite alternate;
+}
+
+@keyframes pulse{
+ from{
+  filter:drop-shadow(0 0 2px #f1c40f);
+ }
+ to{
+  filter:drop-shadow(0 0 15px #f1c40f);
+ }
+}
+
+.controls{
+ width:min(96%,900px);
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:6px;
+ margin:8px 0;
+}
+
+.power{
+ color:white;
+ min-width:0;
+ padding:11px 5px;
+ font-size:13px;
+}
+
+.xray{background:#8e44ad}
+.freeze{background:#3498db}
+.slow{background:#16a085}
+.hint{background:#f39c12}
+.shuffle{background:#d35400}
+.time{background:#27ae60}
+
+.quit{
+ background:#e74c3c;
+ grid-column:1/-1;
+}
+
+.info{
+ width:min(96%,900px);
+ background:white;
+ padding:10px;
+ border-radius:13px;
+ text-align:center;
+ color:#555;
+ min-height:40px;
+ margin-bottom:3px;
+ box-shadow:0 3px 12px rgba(32,37,52,.05);
+ font-size:14px;
+ flex-shrink:0;
+}
+
+/* LOJA */
+
+.shop-container{
+ width:min(94%,600px);
+}
+
+.shop{
+ width:100%;
+ background:white;
+ border-radius:19px;
+ padding:17px;
+ margin:7px 0;
+ text-align:left;
+ box-shadow:var(--shadow);
+ display:grid;
+ grid-template-columns:55px 1fr auto;
+ gap:10px;
+ align-items:center;
+}
+
+.shop-icon{
+ width:52px;
+ height:52px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:#f3f4fa;
+ border-radius:15px;
+ font-size:29px;
+ grid-row:span 3;
+}
+
+.shop h3{
+ font-size:16px;
+}
+
+.shop p{
+ color:var(--muted);
+ line-height:1.4;
+ font-size:13px;
+}
+
+.shop-price{
+ color:#b37d00;
+ font-weight:900;
+}
+
+.inventory{
+ color:#8e44ad;
+ font-weight:bold;
+ font-size:12px;
+}
+
+.buy{
+ background:#8e44ad;
+ color:white;
+ padding:10px 13px;
+ grid-column:3;
+ grid-row:1 / span 3;
+}
+
+/* ESTATÍSTICAS */
+
+.statbox{
+ width:min(94%,550px);
+ background:white;
+ border-radius:21px;
+ padding:19px;
+ box-shadow:var(--shadow);
+}
+
+.stat{
+ display:flex;
+ justify-content:space-between;
+ padding:13px 4px;
+ border-bottom:1px solid #eceef3;
+}
+
+.stat:last-child{
+ border-bottom:0;
+}
+
+.stat span{
+ color:var(--muted);
+}
+
+.stat b{
+ color:#303952;
+}
+
+/* MODAL */
+
+.overlay{
+ display:none;
+ position:fixed;
+ inset:0;
+ background:rgba(20,24,35,.65);
+ backdrop-filter:blur(5px);
+ -webkit-backdrop-filter:blur(5px);
+ z-index:5000;
+ align-items:center;
+ justify-content:center;
+ padding:18px;
+}
+
+.modal{
+ width:min(94%,460px);
+ background:white;
+ border-radius:23px;
+ padding:23px;
+ text-align:center;
+ box-shadow:0 18px 60px rgba(0,0,0,.2);
+}
+
+.modal h2{
+ margin-bottom:10px;
+}
+
+.modal p{
+ color:#555;
+ line-height:1.5;
+ margin:9px 0;
+}
+
+.reward{
+ font-size:20px;
+ font-weight:bold;
+ color:#d69e00;
+ margin:12px;
+}
+
+.modal button{
+ margin:4px;
+}
+
+kbd{
+ background:#303952;
+ color:white;
+ padding:4px 7px;
+ border-radius:5px;
+ font-size:12px;
+}
+
+/* MISSÕES */
+
+.mission{
+ background:white;
+ padding:16px;
+ border-radius:18px;
+ width:min(94%,600px);
+ margin:7px;
+ box-shadow:var(--shadow);
+}
+
+.progress{
+ height:8px;
+ background:#e1e4eb;
+ border-radius:10px;
+ overflow:hidden;
+ margin-top:8px;
+}
+
+.progress div{
+ height:100%;
+ background:#2ecc71;
+ border-radius:10px;
+}
+
+/* MOBILE */
+
+@media(max-width:520px){
+
+ .logo{
+  letter-spacing:-2px;
+ }
+
+ .subtitle{
+  margin-bottom:22px;
+ }
+
+ #game-screen{
+  padding:8px 7px 14px;
+ }
+
+ .game-header{
+  padding:9px 12px;
+ }
+
+ .level,
+ .timer{
+  font-size:16px;
+ }
+
+ .grid{
+  gap:5px;
+ }
+
+ .controls{
+  gap:5px;
+ }
+
+ .power{
+  padding:10px 4px;
+  font-size:12px;
+  border-radius:12px;
+ }
+
+ .card-front{
+  font-size:23px;
+ }
+
+ .card-back{
+  border-width:2px;
+ }
+
+ .shop{
+  grid-template-columns:48px 1fr auto;
+  padding:13px;
+ }
+
+ .shop-icon{
+  width:46px;
+  height:46px;
+  font-size:25px;
+ }
+
+ .buy{
+  padding:9px 10px;
+ }
+
+ .mode-buttons{
+  flex-direction:column;
+ }
+
+ .mode-buttons button{
+  width:100%;
+ }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="coins">
+ 🪙 <span id="coins">0</span>
+</div>
+
+<!-- MENU -->
+
+<section id="menu-screen" class="screen">
+
+ <div class="logo">
+  MEMÓRIA<br><span>ALGÉBRICA</span>
+ </div>
+
+ <div class="subtitle">
+  🧠 Encontre monômios do mesmo grau,
+  crie combos e avance o máximo que conseguir.
+ </div>
+
+ <div class="menu-buttons">
+
+  <button class="play" id="playBtn">
+   ▶️ JOGAR
+  </button>
+
+  <button class="learn" id="learnBtn">
+   📚 APRENDER
+  </button>
+
+  <button class="store" id="storeBtn">
+   🛒 LOJA
+  </button>
+
+  <button class="moreBtn" id="moreBtn">
+   ☰ MAIS
+  </button>
+
+  <div class="more-buttons" id="moreButtons">
+
+   <button class="missions" id="missionsBtn">
+    🎯 MISSÕES
+   </button>
+
+   <button class="stats" id="statsBtn">
+    🏆 ESTATÍSTICAS
+   </button>
+
+   <button class="controlsBtn" id="controlsBtn">
+    🎮 CONTROLES
+   </button>
+
+  </div>
+
+ </div>
+
+ <div style="
+  margin-top:18px;
+  color:#8b909c;
+  text-align:center;
+  font-size:12px;
+  line-height:1.8;
+ ">
+  PC:
+  <kbd>Espaço</kbd> jogar ·
+  <kbd>R</kbd> Raio-X ·
+  <kbd>F</kbd> Congelar ·
+  <kbd>H</kbd> Dica
+ </div>
+
+ <div class="version">
+  Versão 1.18
+ </div>
+
+</section>
+
+<!-- MODOS -->
+
+<section id="mode-screen" class="screen">
+
+ <h2 class="page-title">🎮 Escolha o modo</h2>
+
+ <div class="mode-list">
+
+  <div class="mode selected" data-mode="classic">
+
+   <div class="mode-top">
+    <div class="mode-name">🧠 Clássico</div>
+    <div class="mode-check">✓</div>
+   </div>
+
+   <p>
+    Jogue normalmente e avance pelas fases.
+    Um modo equilibrado para aprender e jogar.
+   </p>
+
+  </div>
+
+  <div class="mode" data-mode="rush">
+
+   <div class="mode-top">
+    <div class="mode-name">⚡ Corrida</div>
+    <div class="mode-check">✓</div>
+   </div>
+
+   <p>
+    Você começa com menos tempo,
+    mas cada par correto adiciona alguns segundos.
+   </p>
+
+  </div>
+
+  <div class="mode" data-mode="marathon">
+
+   <div class="mode-top">
+    <div class="mode-name">🏃 Maratona</div>
+    <div class="mode-check">✓</div>
+   </div>
+
+   <p>
+    Mais tempo disponível, porém as fases
+    ficam maiores conforme você avança.
+   </p>
+
+  </div>
+
+ </div>
+
+ <div class="mode-buttons">
+
+  <button class="play" id="startModeBtn">
+   Começar
+  </button>
+
+  <button class="back" id="modeBackBtn">
+   Voltar
+  </button>
+
+ </div>
+
+</section>
+
+<!-- JOGO -->
+
+<section id="game-screen" class="screen">
+
+ <div class="game-header">
+
+  <div>
+   <div class="level" id="levelDisplay">
+    Fase 1
+   </div>
+
+   <div class="score" id="scoreDisplay">
+    ⭐ 0
+   </div>
+  </div>
+
+  <div class="timer" id="timerDisplay">
+   ⏱️ 40s
+  </div>
+
+ </div>
+
+ <div class="timer-container" id="timer-container">
+  <div id="timer-bar"></div>
+ </div>
+
+ <div id="game-grid" class="grid"></div>
+
+ <div class="controls">
+
+  <button class="power xray" id="peekBtn">
+   🩻 Raio-X
+  </button>
+
+  <button class="power freeze" id="freezeBtn">
+   ❄️ Congelar
+  </button>
+
+  <button class="power slow" id="slowBtn">
+   🐌 Lenta
+  </button>
+
+  <button class="power hint" id="hintBtn">
+   💡 Dica
+  </button>
+
+  <button class="power shuffle" id="shuffleBtn">
+   🔀 Embaralhar
+  </button>
+
+  <button class="power time" id="timeBtn">
+   ⏳ +Tempo
+  </button>
+
+  <button class="power quit" id="quitBtn">
+   🚪 Sair
+  </button>
+
+ </div>
+
+ <div class="info" id="info">
+  Encontre duas expressões do mesmo grau!
+ </div>
+
+</section>
+
+<!-- LOJA -->
+
+<section id="store-screen" class="screen">
+
+ <h2 class="page-title">🛒 Loja</h2>
+
+ <div id="shopContainer" class="shop-container"></div>
+
+ <button class="back" id="storeBack">
+  Voltar
+ </button>
+
+</section>
+
+<!-- APRENDER -->
+
+<section id="learn-screen" class="screen">
+
+ <h2 class="page-title">📚 Aprenda</h2>
+
+ <div class="cardbox">
+
+  <h3>Como descobrir o grau?</h3>
+
+  <p>
+   Você precisa <b>somar os expoentes das variáveis</b>.
+  </p>
+
+  <div class="example">
+   4x²y³
+  </div>
+
+  <p>
+   x tem expoente 2.<br>
+   y tem expoente 3.
+  </p>
+
+  <div class="example">
+   2 + 3 = 5
+  </div>
+
+  <p>
+   Portanto, <b>4x²y³ é de 5º grau.</b>
+  </p>
+
+ </div>
+
+ <div class="cardbox">
+
+  <h3>Exemplos</h3>
+
+  <p>x → 1º grau</p>
+  <p>x² → 2º grau</p>
+  <p>3xy → 2º grau</p>
+  <p>2x²y → 3º grau</p>
+  <p>a³b² → 5º grau</p>
+  <p>x²y³z → 6º grau</p>
+
+ </div>
+
+ <button class="play" id="practiceBtn">
+  🧠 Praticar
+ </button>
+
+ <button class="back" id="learnBack">
+  Voltar
+ </button>
+
+</section>
+
+<!-- MISSÕES -->
+
+<section id="missions-screen" class="screen">
+
+ <h2 class="page-title">🎯 Missões</h2>
+
+ <div id="missionsContainer"></div>
+
+ <button class="back" id="missionsBack">
+  Voltar
+ </button>
+
+</section>
+
+<!-- ESTATÍSTICAS -->
+
+<section id="stats-screen" class="screen">
+
+ <h2 class="page-title">🏆 Estatísticas</h2>
+
+ <div class="statbox">
+
+  <div class="stat">
+   <span>Modo atual</span>
+   <b id="statMode">Clássico</b>
+  </div>
+
+  <div class="stat">
+   <span>Fase atual</span>
+   <b id="statLevel">1</b>
+  </div>
+
+  <div class="stat">
+   <span>Melhor fase</span>
+   <b id="statBest">1</b>
+  </div>
+
+  <div class="stat">
+   <span>Pontuação</span>
+   <b id="statScore">0</b>
+  </div>
+
+  <div class="stat">
+   <span>Recorde</span>
+   <b id="statRecord">0</b>
+  </div>
+
+  <div class="stat">
+   <span>Pares encontrados</span>
+   <b id="statPairs">0</b>
+  </div>
+
+  <div class="stat">
+   <span>Maior combo</span>
+   <b id="statCombo">0</b>
+  </div>
+
+  <div class="stat">
+   <span>Fases completas</span>
+   <b id="statCompleted">0</b>
+  </div>
+
+ </div>
+
+ <button class="back" id="statsBack">
+  Voltar
+ </button>
+
+ <button
+  id="resetBtn"
+  style="
+   background:#555;
+   color:white;
+   margin-top:7px;
+  "
+ >
+  🗑️ Apagar progresso
+ </button>
+
+</section>
+
+<!-- CONTROLES -->
+
+<section id="controls-screen" class="screen">
+
+ <h2 class="page-title">🎮 Controles</h2>
+
+ <div class="cardbox">
+
+  <h3>🖥️ PC</h3>
+
+  <p><kbd>ESPAÇO</kbd> Jogar</p>
+  <p><kbd>R</kbd> Raio-X</p>
+  <p><kbd>F</kbd> Congelar</p>
+  <p><kbd>S</kbd> Câmera lenta</p>
+  <p><kbd>H</kbd> Dica</p>
+  <p><kbd>B</kbd> Embaralhar</p>
+  <p><kbd>T</kbd> +Tempo</p>
+  <p><kbd>Q</kbd> Sair</p>
+
+ </div>
+
+ <div class="cardbox">
+
+  <h3>📱 Celular</h3>
+
+  <p>
+   Basta tocar nas cartas e nos botões.
+  </p>
+
+  <p>
+   Nenhuma habilidade depende do teclado.
+  </p>
+
+ </div>
+
+ <button class="back" id="controlsBack">
+  Voltar
+ </button>
+
+</section>
+
+<!-- MODAL -->
+
+<div class="overlay" id="overlay">
+
+ <div class="modal">
+
+  <h2 id="modalTitle"></h2>
+
+  <p id="modalMessage"></p>
+
+  <div class="reward" id="modalReward"></div>
+
+  <div id="modalExtra"></div>
+
+  <button class="play" id="modalButton">
+   Continuar
+  </button>
+
+ </div>
+
+</div>
+
+<script>
+
+/* =====================================================
+   ESTADO
+===================================================== */
+
+const SAVE_KEY="grausMemoriaV118";
+const OLD_SAVE_KEY="grausMemoriaV117";
+const OLD_SAVE_KEY_2="grausMemoriaV116";
+const OLD_SAVE_KEY_3="grausMemoriaV115";
+const OLDER_SAVE_KEY="grausMemoriaV114";
+
+const MODE_NAMES={
+ classic:"🧠 Clássico",
+ rush:"⚡ Corrida",
+ marathon:"🏃 Maratona"
+};
+
+let coins=0;
+
+let modeProgress={
+ classic:createDefaultModeProgress(),
+ rush:createDefaultModeProgress(),
+ marathon:createDefaultModeProgress()
+};
+
+let mode="classic";
+
+let cards=[];
+let firstCard=null;
+let secondCard=null;
+
+let matchedPairs=0;
+let totalPairs=0;
+let combo=0;
+
+let gameRunning=false;
+let boardLocked=false;
+let powerActive=false;
+
+let maxTime=40;
+let timeLeft=40;
+let lastFrame=0;
+
+let freezeUntil=0;
+let slowUntil=0;
+
+let mismatchTimer=null;
+let powerTimer=null;
+
+let modalEscapeAllowed=true;
+
+let totalPairsFound=0;
+let completedLevels=0;
+let maxCombo=0;
+
+let claimedMissions={
+ pairs:false,
+ combo:false,
+ levels:false
+};
+
+let powerUps={
+ peek:2,
+ freeze:1,
+ slow:1,
+ hint:2,
+ shuffle:1,
+ time:1
+};
+
+
+/* =====================================================
+   PROGRESSO POR MODO
+===================================================== */
+
+function createDefaultModeProgress(){
+
+ return{
+  level:1,
+  score:0,
+  bestScore:0,
+  bestLevel:1,
+  resume:null
+ };
+
+}
+
+
+function getModeProgress(){
+
+ if(
+  !modeProgress||
+  !modeProgress[mode]
+ ){
+
+  modeProgress[mode]=
+   createDefaultModeProgress();
+
+ }
+
+ return modeProgress[mode];
+
+}
+
+
+function getCurrentLevel(){
+
+ return Math.max(
+  1,
+  Number(
+   getModeProgress().level
+  )||1
+ );
+
+}
+
+
+function getCurrentScore(){
+
+ return Math.max(
+  0,
+  Number(
+   getModeProgress().score
+  )||0
+ );
+
+}
+
+
+function getCurrentBestLevel(){
+
+ return Math.max(
+  1,
+  Number(
+   getModeProgress().bestLevel
+  )||1
+ );
+
+}
+
+
+function getCurrentBestScore(){
+
+ return Math.max(
+  0,
+  Number(
+   getModeProgress().bestScore
+  )||0
+ );
+
+}
+
+
+function setCurrentLevel(value){
+
+ getModeProgress().level=
+  Math.max(1,Number(value)||1);
+
+}
+
+
+function setCurrentScore(value){
+
+ getModeProgress().score=
+  Math.max(0,Number(value)||0);
+
+}
+
+
+function setCurrentBestLevel(value){
+
+ getModeProgress().bestLevel=
+  Math.max(1,Number(value)||1);
+
+}
+
+
+function setCurrentBestScore(value){
+
+ getModeProgress().bestScore=
+  Math.max(0,Number(value)||0);
+
+}
+
+
+/* =====================================================
+   MONÔMIOS
+===================================================== */
+
+const monomials={
+
+1:[
+ "x","2y","5a","-b","7m","3z","4x","-2y"
+],
+
+2:[
+ "x²","3xy","a²","-4m²","2ab","7z²",
+ "5xy","2a²","-3b²","4mn"
+],
+
+3:[
+ "x³","2x²y","abc","4y³","3a²b","-5m³",
+ "x²z","2ab²","3mn²","7p³"
+],
+
+4:[
+ "x⁴","x²y²","3ab³","m⁴","2a²b²","7z⁴",
+ "x³y","4mn³","a²b²","2p⁴"
+],
+
+5:[
+ "x⁵","2x³y²","a⁴b","z⁵","3m²n³","7a⁵",
+ "x²y³","4abc²","m³n²","2p⁵"
+],
+
+6:[
+ "x⁶","a³b³","2x⁴y²","m⁶","3a²b⁴","z⁶",
+ "x³y²z","2abc³","p⁶","4m²n⁴"
+],
+
+7:[
+ "x⁷","a⁵b²","2x³y⁴","m⁷","3a²b⁵","z⁷",
+ "x⁴y³","2p⁵q²","abc⁵","n⁷"
+],
+
+8:[
+ "x⁸","a⁴b⁴","2x³y⁵","m⁸","3a²b⁶","z⁸",
+ "x⁵y³","2p⁴q⁴","abc⁶","n⁸"
+],
+
+9:[
+ "x⁹","a⁵b⁴","2x⁴y⁵","m⁹","3a²b⁷","z⁹",
+ "x⁶y³","2p⁵q⁴","abc⁷","n⁹"
+],
+
+10:[
+ "x¹⁰","a⁵b⁵","2x⁶y⁴","m¹⁰","3a²b⁸","z¹⁰",
+ "x⁷y³","2p⁶q⁴","abc⁸","n¹⁰"
+],
+
+11:[
+ "x¹¹","a⁶b⁵","2x⁷y⁴","m¹¹","3a³b⁸","z¹¹"
+],
+
+12:[
+ "x¹²","a⁶b⁶","2x⁸y⁴","m¹²","3a⁴b⁸","z¹²"
+],
+
+13:[
+ "x¹³","a⁷b⁶","2x⁸y⁵","m¹³","3a⁵b⁸","z¹³"
+],
+
+14:[
+ "x¹⁴","a⁷b⁷","2x⁹y⁵","m¹⁴","3a⁶b⁸","z¹⁴"
+]
+
+};
+
+
+/* =====================================================
+   ALEATORIEDADE
+===================================================== */
+
+function shuffleArray(array){
+
+ for(let i=array.length-1;i>0;i--){
+
+  const j=
+   Math.floor(Math.random()*(i+1));
+
+  [array[i],array[j]]=
+   [array[j],array[i]];
+
+ }
+
+ return array;
+
+}
+
+
+/* =====================================================
+   SALVAR
+===================================================== */
+
+function saveGame(){
+
+ if(gameRunning){
+
+  saveCurrentStage();
+
+ }
+
+ const data={
+  version:118,
+  coins,
+  mode,
+  modeProgress,
+  totalPairsFound,
+  completedLevels,
+  maxCombo,
+  powerUps,
+  claimedMissions
+ };
+
+ try{
+
+  localStorage.setItem(
+   SAVE_KEY,
+   JSON.stringify(data)
+  );
+
+ }catch(e){
+
+  console.warn(
+   "Não foi possível salvar:",
+   e
+  );
+
+ }
+
+}
+
+
+/* =====================================================
+   SALVAR FASE ATUAL
+===================================================== */
+
+function saveCurrentStage(){
+
+ if(!gameRunning)return;
+
+ const progress=
+  getModeProgress();
+
+ const grid=
+  document.getElementById(
+   "game-grid"
+  );
+
+ if(!grid)return;
+
+ const matchedIndices=
+  Array.from(
+   grid.children
+  )
+  .filter(card=>
+   card.classList.contains("matched")
+  )
+  .map(card=>
+   Number(card.dataset.index)
+  );
+
+ const currentCards=
+  cards.map(card=>({
+   text:card.text,
+   degree:Number(card.degree)
+  }));
+
+ progress.resume={
+
+  level:getCurrentLevel(),
+  score:getCurrentScore(),
+  maxTime,
+
+  timeLeft:Math.max(
+   0,
+   Number(timeLeft)||0
+  ),
+
+  cards:currentCards,
+  matchedIndices,
+  matchedPairs,
+  totalPairs,
+  combo,
+
+  columns:
+   Number(
+    grid.style.gridTemplateColumns
+     .match(/repeat\((\d+)/)?.[1]
+   )||3
+
+ };
+
+}
+
+
+/* =====================================================
+   CARREGAR
+===================================================== */
+
+function loadGame(){
+
+ try{
+
+  let raw=
+   localStorage.getItem(SAVE_KEY);
+
+  if(!raw){
+
+   raw=
+    localStorage.getItem(
+     OLD_SAVE_KEY
+    );
+
+  }
+
+  if(!raw){
+
+   raw=
+    localStorage.getItem(
+     OLD_SAVE_KEY_2
+    );
+
+  }
+
+  if(!raw){
+
+   raw=
+    localStorage.getItem(
+     OLD_SAVE_KEY_3
+    );
+
+  }
+
+  if(!raw){
+
+   raw=
+    localStorage.getItem(
+     OLDER_SAVE_KEY
+    );
+
+  }
+
+  if(!raw)return;
+
+  const d=JSON.parse(raw);
+
+  if(!d||typeof d!=="object"){
+   return;
+  }
+
+  coins=
+   Math.max(
+    0,
+    Number(d.coins)||0
+   );
+
+  totalPairsFound=
+   Math.max(
+    0,
+    Number(d.totalPairsFound)||0
+   );
+
+  completedLevels=
+   Math.max(
+    0,
+    Number(d.completedLevels)||0
+   );
+
+  maxCombo=
+   Math.max(
+    0,
+    Number(d.maxCombo)||0
+   );
+
+  if(d.powerUps){
+
+   Object.keys(powerUps).forEach(k=>{
+
+    if(
+     d.powerUps[k]!==undefined
+    ){
+
+     powerUps[k]=Math.max(
+      0,
+      Number(d.powerUps[k])||0
+     );
+
+    }
+
+   });
+
+  }
+
+  if(d.claimedMissions){
+
+   claimedMissions={
+    pairs:!!d.claimedMissions.pairs,
+    combo:!!d.claimedMissions.combo,
+    levels:!!d.claimedMissions.levels
+   };
+
+  }
+
+  if(
+   d.modeProgress &&
+   typeof d.modeProgress==="object"
+  ){
+
+   ["classic","rush","marathon"]
+   .forEach(modeName=>{
+
+    const old=
+     d.modeProgress[modeName];
+
+    if(!old){
+
+     modeProgress[modeName]=
+      createDefaultModeProgress();
+
+     return;
+
+    }
+
+    modeProgress[modeName]={
+
+     level:Math.max(
+      1,
+      Number(old.level)||1
+     ),
+
+     score:Math.max(
+      0,
+      Number(old.score)||0
+     ),
+
+     bestScore:Math.max(
+      0,
+      Number(old.bestScore)||0
+     ),
+
+     bestLevel:Math.max(
+      1,
+      Number(old.bestLevel)||1
+     ),
+
+     resume:
+      old.resume &&
+      typeof old.resume==="object"
+       ?old.resume
+       :null
+
+    };
+
+   });
+
+  }else{
+
+   let oldMode="classic";
+
+   if(
+    d.mode==="classic"||
+    d.mode==="rush"||
+    d.mode==="marathon"
+   ){
+
+    oldMode=d.mode;
+
+   }
+
+   modeProgress[oldMode]={
+
+    level:Math.max(
+     1,
+     Number(d.level)||1
+    ),
+
+    score:Math.max(
+     0,
+     Number(d.score)||0
+    ),
+
+    bestScore:Math.max(
+     0,
+     Number(d.bestScore)||0
+    ),
+
+    bestLevel:Math.max(
+     1,
+     Number(d.bestLevel)||1
+    ),
+
+    resume:null
+
+   };
+
+  }
+
+  if(
+   d.mode==="classic"||
+   d.mode==="rush"||
+   d.mode==="marathon"
+  ){
+
+   mode=d.mode;
+
+  }
+
+ }catch(e){
+
+  console.warn(
+   "Save inválido. Usando valores padrão.",
+   e
+  );
+
+ }
+
+}
+
+
+/* =====================================================
+   TELA
+===================================================== */
+
+function showScreen(id){
+
+ document
+  .querySelectorAll(".screen")
+  .forEach(screen=>{
+   screen.style.display="none";
+  });
+
+ const target=
+  document.getElementById(id);
+
+ if(!target)return;
+
+ target.style.display="flex";
+
+ if(id==="game-screen"){
+
+  const timerContainer=
+   document.getElementById(
+    "timer-container"
+   );
+
+  const timerBar=
+   document.getElementById(
+    "timer-bar"
+   );
+
+  if(timerContainer){
+
+   timerContainer.style.display="block";
+   timerContainer.style.visibility="visible";
+   timerContainer.style.opacity="1";
+
+  }
+
+  if(timerBar){
+
+   timerBar.style.display="block";
+   timerBar.style.visibility="visible";
+   timerBar.style.opacity="1";
+
+  }
+
+ }
+
+ updateUI();
+
+ if(id==="stats-screen"){
+  updateStats();
+ }
+
+ if(id==="missions-screen"){
+  updateMissions();
+ }
+
+ if(id==="store-screen"){
+  updateShop();
+ }
+
+}
+
+
+/* =====================================================
+   UI
+===================================================== */
+
+function updateUI(){
+
+ const coinElement=
+  document.getElementById("coins");
+
+ if(coinElement){
+  coinElement.textContent=coins;
+ }
+
+ updatePowerButtons();
+ updateModeStartButton();
+
+}
+
+
+/* =====================================================
+   BOTÃO COMEÇAR / CONTINUAR
+===================================================== */
+
+function updateModeStartButton(){
+
+ const button=
+  document.getElementById(
+   "startModeBtn"
+  );
+
+ if(!button)return;
+
+ const resume=
+  getModeProgress().resume;
+
+ if(resume){
+
+  button.textContent=
+   `▶️ Continuar — Fase ${resume.level}`;
+
+ }else{
+
+  button.textContent=
+   `▶️ Começar — Fase ${getCurrentLevel()}`;
+
+ }
+
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+function modal(
+ title,
+ message,
+ reward="",
+ button="Continuar",
+ callback=()=>{},
+ allowEscape=true
+){
+
+ document.getElementById(
+  "modalTitle"
+ ).textContent=title;
+
+ document.getElementById(
+  "modalMessage"
+ ).textContent=message;
+
+ document.getElementById(
+  "modalReward"
+ ).innerHTML=reward;
+
+ document.getElementById(
+  "modalExtra"
+ ).innerHTML="";
+
+ modalEscapeAllowed=allowEscape;
+
+ const btn=
+  document.getElementById(
+   "modalButton"
+  );
+
+ btn.textContent=button;
+
+ btn.onclick=()=>{
+
+  closeModal();
+
+  callback();
+
+ };
+
+ document.getElementById(
+  "overlay"
+ ).style.display="flex";
+
+}
+
+
+function closeModal(){
+
+ document.getElementById(
+  "overlay"
+ ).style.display="none";
+
+ modalEscapeAllowed=true;
+
+}
+
+
+/* =====================================================
+   MODOS
+===================================================== */
+
+function updateModeUI(){
+
+ document
+  .querySelectorAll(".mode")
+  .forEach(el=>{
+
+   el.classList.toggle(
+    "selected",
+    el.dataset.mode===mode
+   );
+
+  });
+
+ updateModeStartButton();
+
+}
+
+
+document.querySelectorAll(".mode").forEach(el=>{
+
+ el.addEventListener("click",()=>{
+
+  if(gameRunning)return;
+
+  mode=el.dataset.mode;
+
+  updateModeUI();
+
+  saveGame();
+
+ });
+
+});
+
+
+/* =====================================================
+   ESCOLHER MODO
+===================================================== */
+
+function chooseMode(){
+
+ if(gameRunning){
+  return;
+ }
+
+ updateModeUI();
+
+ showScreen("mode-screen");
+
+}
+
+
+/* =====================================================
+   CONFIGURAR TEMPO
+===================================================== */
+
+function calculateMaxTime(){
+
+ const level=
+  getCurrentLevel();
+
+ if(mode==="marathon"){
+
+  return Math.max(
+   50,
+   75-level*1.2
+  );
+
+ }
+
+ if(mode==="rush"){
+
+  return Math.max(
+   20,
+   35-level*.7
+  );
+
+ }
+
+ return Math.max(
+  30,
+  52-level*.8
+ );
+
+}
+
+
+/* =====================================================
+   TOTAL DE PARES
+===================================================== */
+
+function calculateTotalPairs(){
+
+ const level=
+  getCurrentLevel();
+
+ return Math.min(
+  3+Math.floor((level-1)/2),
+  mode==="marathon"?14:11
+ );
+
+}
+
+
+/* =====================================================
+   COMEÇAR / CONTINUAR
+===================================================== */
+
+function startGame(){
+
+ closeModal();
+
+ clearGameTimers();
+
+ gameRunning=true;
+ boardLocked=false;
+ powerActive=false;
+
+ firstCard=null;
+ secondCard=null;
+ combo=0;
+
+ const progress=
+  getModeProgress();
+
+ if(progress.resume){
+
+  restoreSavedStage();
+
+ }else{
+
+  startNewStage();
+
+ }
+
+ updatePowerButtons();
+ updateTimer();
+ updateGameHeader();
+
+ lastFrame=
+  performance.now();
+
+ showScreen("game-screen");
+
+ requestAnimationFrame(timerLoop);
+
+}
+
+
+/* =====================================================
+   NOVA FASE
+===================================================== */
+
+function startNewStage(){
+
+ firstCard=null;
+ secondCard=null;
+ matchedPairs=0;
+ combo=0;
+
+ totalPairs=
+  calculateTotalPairs();
+
+ maxTime=
+  calculateMaxTime();
+
+ timeLeft=maxTime;
+
+ cards=
+  generateCards(totalPairs);
+
+ renderCards();
+
+ const progress=
+  getModeProgress();
+
+ progress.resume=null;
+
+ saveGame();
+
+}
+
+
+/* =====================================================
+   RESTAURAR FASE SALVA
+===================================================== */
+
+function restoreSavedStage(){
+
+ const progress=
+  getModeProgress();
+
+ const saved=
+  progress.resume;
+
+ if(
+  !saved||
+  !Array.isArray(saved.cards)||
+  !saved.cards.length
+ ){
+
+  progress.resume=null;
+
+  startNewStage();
+
+  return;
+
+ }
+
+ progress.level=
+  Math.max(
+   1,
+   Number(saved.level)||1
+  );
+
+ progress.score=
+  Math.max(
+   0,
+   Number(saved.score)||0
+  );
+
+ maxTime=
+  Math.max(
+   1,
+   Number(saved.maxTime)||
+   calculateMaxTime()
+  );
+
+ timeLeft=
+  Math.max(
+   0,
+   Math.min(
+    maxTime,
+    Number(saved.timeLeft)||0
+   )
+  );
+
+ totalPairs=
+  Math.max(
+   1,
+   Number(saved.totalPairs)||
+   Math.floor(saved.cards.length/2)
+  );
+
+ matchedPairs=
+  Math.max(
+   0,
+   Number(saved.matchedPairs)||0
+  );
+
+ combo=
+  Math.max(
+   0,
+   Number(saved.combo)||0
+  );
+
+ cards=
+  saved.cards.map(card=>({
+   text:String(card.text),
+   degree:Number(card.degree)
+  }));
+
+ renderCards(
+  Array.isArray(saved.matchedIndices)
+   ?saved.matchedIndices
+   :[]
+ );
+
+ progress.resume=null;
+
+ saveGame();
+
+}
+
+
+/* =====================================================
+   RENDERIZAR CARTAS
+===================================================== */
+
+function renderCards(
+ matchedIndices=[]
+){
+
+ const grid=
+  document.getElementById(
+   "game-grid"
+  );
+
+ if(!grid)return;
+
+ let columns=3;
+
+ if(totalPairs>=5){
+  columns=4;
+ }
+
+ if(totalPairs>=9){
+  columns=5;
+ }
+
+ grid.style.gridTemplateColumns=
+  `repeat(${columns},1fr)`;
+
+ grid.innerHTML="";
+
+ const matchedSet=
+  new Set(
+   matchedIndices.map(Number)
+  );
+
+ cards.forEach((data,index)=>{
+
+  const card=
+   document.createElement("div");
+
+  card.className="card";
+
+  card.dataset.degree=
+   data.degree;
+
+  card.dataset.index=
+   index;
+
+  card.innerHTML=`
+   <div class="card-inner">
+
+    <div class="card-front">
+     ?
+    </div>
+
+    <div class="card-back">
+     ${data.text}
+    </div>
+
+   </div>
+  `;
+
+  if(matchedSet.has(index)){
+
+   card.classList.add(
+    "matched",
+    "flipped"
+   );
+
+  }
+
+  card.addEventListener(
+   "click",
+   ()=>flipCard(card)
+  );
+
+  grid.appendChild(card);
+
+ });
+
+}
+
+
+/* =====================================================
+   GERAR CARTAS
+===================================================== */
+
+function generateCards(pairCount){
+
+ /* 1.18: cada par recebe um grau diferente. */
+ const plannedDegree=
+  3+Math.floor(
+   (getCurrentLevel()-1)/3
+  );
+
+ const maxDegree=
+  Math.min(
+   14,
+   Math.max(pairCount,plannedDegree)
+  );
+
+ let available=[];
+
+ for(
+  let i=1;
+  i<=maxDegree;
+  i++
+ ){
+
+  available.push(i);
+
+ }
+
+ shuffleArray(available);
+
+ const selected=[];
+
+ for(let i=0;i<pairCount;i++){
+
+  selected.push(available[i]);
+
+ }
+
+ const result=[];
+ const usedTexts=new Set();
+
+ selected.forEach(degree=>{
+
+  let options=
+   [...monomials[degree]];
+
+  shuffleArray(options);
+
+  let chosen=[];
+
+  for(
+   const expression of options
+  ){
+
+   if(!usedTexts.has(expression)){
+
+    chosen.push(expression);
+    usedTexts.add(expression);
+
+   }
+
+   if(chosen.length>=2){
+    break;
+   }
+
+  }
+
+  if(chosen.length<2){
+
+   const fallback=
+    monomials[degree];
+
+   for(
+    const expression of fallback
+   ){
+
+    if(
+     !chosen.includes(expression)
+    ){
+
+     chosen.push(expression);
+
+    }
+
+    if(chosen.length>=2){
+     break;
+    }
+
+   }
+
+  }
+
+  result.push({
+   text:chosen[0],
+   degree
+  });
+
+  result.push({
+   text:chosen[1],
+   degree
+  });
+
+ });
+
+ shuffleArray(result);
+
+ return result;
+
+}
+
+
+/* =====================================================
+   CARTA
+===================================================== */
+
+function flipCard(card){
+
+ if(!gameRunning)return;
+ if(boardLocked)return;
+
+ if(card.classList.contains("matched")){
+  return;
+ }
+
+ if(card===firstCard){
+  return;
+ }
+
+ if(
+  card.classList.contains("flipped")
+ ){
+  return;
+ }
+
+ card.classList.add("flipped");
+
+ if(!firstCard){
+
+  firstCard=card;
+
+  return;
+
+ }
+
+ secondCard=card;
+
+ checkMatch();
+
+}
+
+
+/* =====================================================
+   COMPARAR
+===================================================== */
+
+function checkMatch(){
+
+ if(!firstCard||!secondCard){
+  return;
+ }
+
+ const a=
+  firstCard.dataset.degree;
+
+ const b=
+  secondCard.dataset.degree;
+
+ if(a===b){
+
+  correctPair();
+
+ }else{
+
+  wrongPair();
+
+ }
+
+}
+
+
+/* =====================================================
+   ACERTO
+===================================================== */
+
+function correctPair(){
+
+ if(!firstCard||!secondCard){
+  return;
+ }
+
+ firstCard.classList.add("matched");
+ secondCard.classList.add("matched");
+
+ matchedPairs++;
+ totalPairsFound++;
+ combo++;
+
+ if(combo>maxCombo){
+  maxCombo=combo;
+ }
+
+ let points=
+  10+
+  Math.min(combo*4,30);
+
+ if(mode==="rush"){
+  timeLeft+=3;
+
+  if(timeLeft>maxTime){
+   timeLeft=maxTime;
+  }
+ }
+
+ const progress=
+  getModeProgress();
+
+ progress.score=
+  getCurrentScore()+points;
+
+ if(
+  progress.score>
+  getCurrentBestScore()
+ ){
+
+  progress.bestScore=
+   progress.score;
+
+ }
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  `✅ ${firstCard.dataset.degree}º grau! +${points} pontos`+
+  (
+   combo>=3
+   ?` 🔥 Combo x${combo}`
+   :""
+  );
+
+ firstCard=null;
+ secondCard=null;
+
+ updateGameHeader();
+ updateTimer();
+
+ saveGame();
+
+ if(matchedPairs>=totalPairs){
+
+  setTimeout(
+   levelComplete,
+   500
+  );
+
+ }
+
+}
+
+
+/* =====================================================
+   ERRO
+===================================================== */
+
+function wrongPair(){
+
+ combo=0;
+
+ boardLocked=true;
+
+ const a=
+  firstCard.dataset.degree;
+
+ const b=
+  secondCard.dataset.degree;
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  `❌ Diferentes: ${a}º grau e ${b}º grau.`;
+
+ if(mismatchTimer){
+  clearTimeout(mismatchTimer);
+ }
+
+ mismatchTimer=setTimeout(()=>{
+
+  if(firstCard){
+   firstCard.classList.remove("flipped");
+  }
+
+  if(secondCard){
+   secondCard.classList.remove("flipped");
+  }
+
+  firstCard=null;
+  secondCard=null;
+
+  boardLocked=false;
+  mismatchTimer=null;
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "Encontre duas expressões do mesmo grau!";
+
+  saveGame();
+
+ },1200);
+
+}
+
+
+/* =====================================================
+   CRONÔMETRO
+===================================================== */
+
+function timerLoop(now){
+
+ if(!gameRunning)return;
+
+ if(document.hidden){
+
+  lastFrame=now;
+
+  requestAnimationFrame(
+   timerLoop
+  );
+
+  return;
+
+ }
+
+ const elapsed=
+  Math.max(
+   0,
+   (now-lastFrame)/1000
+  );
+
+ lastFrame=now;
+
+ let speed=1;
+
+ if(Date.now()<slowUntil){
+  speed=.5;
+ }
+
+ if(Date.now()<freezeUntil){
+  speed=0;
+ }
+
+ timeLeft-=
+  elapsed*speed;
+
+ if(timeLeft<0){
+  timeLeft=0;
+ }
+
+ updateTimer();
+
+ if(
+  Math.floor(timeLeft)!==
+  Math.floor(
+   timeLeft+elapsed*speed
+  )
+ ){
+
+  saveGame();
+
+ }
+
+ if(timeLeft<=0){
+
+  gameOver();
+
+  return;
+
+ }
+
+ requestAnimationFrame(
+  timerLoop
+ );
+
+}
+
+
+/* =====================================================
+   TIMER
+===================================================== */
+
+function updateTimer(){
+
+ const display=
+  Math.max(
+   0,
+   Math.ceil(timeLeft)
+  );
+
+ document.getElementById(
+  "timerDisplay"
+ ).textContent=
+  `⏱️ ${display}s`;
+
+ const percent=
+  Math.max(
+   0,
+   Math.min(
+    100,
+    maxTime>0
+     ?(timeLeft/maxTime)*100
+     :0
+   )
+  );
+
+ const bar=
+  document.getElementById(
+   "timer-bar"
+  );
+
+ const container=
+  document.getElementById(
+   "timer-container"
+  );
+
+ if(container){
+
+  container.style.display="block";
+  container.style.visibility="visible";
+  container.style.opacity="1";
+
+ }
+
+ if(bar){
+
+  bar.style.display="block";
+  bar.style.visibility="visible";
+  bar.style.opacity="1";
+
+  bar.style.width=
+   percent+"%";
+
+  if(timeLeft<=10){
+
+   bar.style.background=
+    "#e74c3c";
+
+  }else if(timeLeft<=20){
+
+   bar.style.background=
+    "#f1c40f";
+
+  }else{
+
+   bar.style.background=
+    "#2ecc71";
+
+  }
+
+ }
+
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+function updateGameHeader(){
+
+ document.getElementById(
+  "levelDisplay"
+ ).textContent=
+  `Fase ${getCurrentLevel()}`;
+
+ document.getElementById(
+  "scoreDisplay"
+ ).textContent=
+  `⭐ ${getCurrentScore()}`+
+  (
+   combo>1
+   ?` | 🔥 x${combo}`
+   :""
+  );
+
+}
+
+
+/* =====================================================
+   HABILIDADES
+===================================================== */
+
+function usePower(type){
+
+ if(!gameRunning)return;
+
+ if(powerActive){
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "⚡ Espere a habilidade atual terminar.";
+
+  return;
+
+ }
+
+ if(!powerUps[type]){
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "❌ Você não possui essa habilidade. Vá à Loja.";
+
+  return;
+
+ }
+
+ powerUps[type]--;
+
+ saveGame();
+
+ updatePowerButtons();
+
+ if(type==="peek"){
+  usePeek();
+ }
+
+ if(type==="freeze"){
+  useFreeze();
+ }
+
+ if(type==="slow"){
+  useSlow();
+ }
+
+ if(type==="hint"){
+  useHint();
+ }
+
+ if(type==="shuffle"){
+  useShuffle();
+ }
+
+ if(type==="time"){
+  useTime();
+ }
+
+}
+
+
+/* =====================================================
+   RAIO-X
+===================================================== */
+
+function usePeek(){
+
+ powerActive=true;
+ boardLocked=true;
+
+ const all=
+  document.querySelectorAll(
+   ".card:not(.matched)"
+  );
+
+ all.forEach(
+  c=>c.classList.add("flipped")
+ );
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  "🩻 RAIO-X! Memorize as cartas...";
+
+ if(powerTimer){
+  clearTimeout(powerTimer);
+ }
+
+ powerTimer=setTimeout(()=>{
+
+  all.forEach(c=>{
+
+   if(!c.classList.contains("matched")){
+    c.classList.remove("flipped");
+   }
+
+  });
+
+  boardLocked=false;
+  powerActive=false;
+  powerTimer=null;
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "🩻 As cartas foram escondidas!";
+
+  saveGame();
+
+  updatePowerButtons();
+
+ },7000);
+
+}
+
+
+/* =====================================================
+   FIM DA PARTE 1
+===================================================== */
+  /* =====================================================
+   CONGELAR
+===================================================== */
+
+function useFreeze(){
+
+ powerActive=true;
+
+ freezeUntil=
+  Date.now()+7000;
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  "❄️ TEMPO CONGELADO por 7 segundos!";
+
+ if(powerTimer){
+  clearTimeout(powerTimer);
+ }
+
+ powerTimer=setTimeout(()=>{
+
+  freezeUntil=0;
+  powerActive=false;
+  powerTimer=null;
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "❄️ O tempo voltou a correr.";
+
+  saveGame();
+  updatePowerButtons();
+
+ },7000);
+
+}
+
+
+/* =====================================================
+   CÂMERA LENTA
+===================================================== */
+
+function useSlow(){
+
+ powerActive=true;
+
+ slowUntil=
+  Date.now()+8000;
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  "🐌 CÂMERA LENTA! O tempo passa pela metade.";
+
+ if(powerTimer){
+  clearTimeout(powerTimer);
+ }
+
+ powerTimer=setTimeout(()=>{
+
+  slowUntil=0;
+  powerActive=false;
+  powerTimer=null;
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "🐌 A câmera lenta terminou.";
+
+  saveGame();
+  updatePowerButtons();
+
+ },8000);
+
+}
+
+
+/* =====================================================
+   DICA
+===================================================== */
+
+function useHint(){
+
+ if(
+  firstCard||
+  secondCard
+ ){
+
+  powerUps.hint++;
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "💡 Termine a jogada atual antes de usar a dica.";
+
+  updatePowerButtons();
+
+  return;
+
+ }
+
+ const unmatched=
+  Array.from(
+   document.querySelectorAll(
+    ".card:not(.matched)"
+   )
+  );
+
+ if(!unmatched.length){
+
+  powerUps.hint++;
+
+  updatePowerButtons();
+
+  return;
+
+ }
+
+ const random=
+  unmatched[
+   Math.floor(
+    Math.random()*unmatched.length
+   )
+  ];
+
+ const degree=
+  random.dataset.degree;
+
+ const partner=
+  unmatched.find(
+   card=>
+    card!==random &&
+    card.dataset.degree===degree
+  );
+
+ if(!partner){
+
+  powerUps.hint++;
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "💡 Não encontrei uma dica disponível.";
+
+  updatePowerButtons();
+
+  return;
+
+ }
+
+ random.classList.add("hint");
+ partner.classList.add("hint");
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  `💡 Essas duas cartas são do ${degree}º grau!`;
+
+ setTimeout(()=>{
+
+  random.classList.remove("hint");
+  partner.classList.remove("hint");
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "Encontre duas expressões do mesmo grau!";
+
+ },3000);
+
+}
+
+
+/* =====================================================
+   EMBARALHAR
+===================================================== */
+
+function useShuffle(){
+
+ if(firstCard||secondCard){
+
+  powerUps.shuffle++;
+
+  document.getElementById(
+   "info"
+  ).textContent=
+   "🔀 Termine a jogada atual antes de embaralhar.";
+
+  updatePowerButtons();
+
+  return;
+
+ }
+
+ const grid=
+  document.getElementById(
+   "game-grid"
+  );
+
+ if(!grid)return;
+
+ const allCards=
+  Array.from(
+   grid.children
+  );
+
+ const unmatched=
+  allCards.filter(
+   card=>
+    !card.classList.contains("matched")
+  );
+
+ if(unmatched.length<2){
+
+  powerUps.shuffle++;
+
+  updatePowerButtons();
+
+  return;
+
+ }
+
+ shuffleArray(unmatched);
+
+ unmatched.forEach(card=>{
+  grid.appendChild(card);
+ });
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  "🔀 Cartas embaralhadas!";
+
+ saveGame();
+
+}
+
+
+/* =====================================================
+   + TEMPO
+===================================================== */
+
+function useTime(){
+
+ const bonus=
+  mode==="rush"
+   ?10
+   :15;
+
+ timeLeft=
+  Math.min(
+   maxTime,
+   timeLeft+bonus
+  );
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  `⏳ +${bonus}s adicionados ao cronômetro!`;
+
+ updateTimer();
+ saveGame();
+
+}
+
+
+/* =====================================================
+   BOTÕES DAS HABILIDADES
+===================================================== */
+
+function updatePowerButtons(){
+
+ const buttons={
+
+  peek:document.getElementById(
+   "peekBtn"
+  ),
+
+  freeze:document.getElementById(
+   "freezeBtn"
+  ),
+
+  slow:document.getElementById(
+   "slowBtn"
+  ),
+
+  hint:document.getElementById(
+   "hintBtn"
+  ),
+
+  shuffle:document.getElementById(
+   "shuffleBtn"
+  ),
+
+  time:document.getElementById(
+   "timeBtn"
+  )
+
+ };
+
+ const labels={
+
+  peek:"🩻 Raio-X",
+  freeze:"❄️ Congelar",
+  slow:"🐌 Lenta",
+  hint:"💡 Dica",
+  shuffle:"🔀 Embaralhar",
+  time:"⏳ +Tempo"
+
+ };
+
+ Object.keys(buttons).forEach(type=>{
+
+  const button=buttons[type];
+
+  if(!button)return;
+
+  button.textContent=
+   `${labels[type]} (${powerUps[type]})`;
+
+  button.disabled=
+   !gameRunning||
+   powerUps[type]<=0;
+
+ });
+
+}
+
+
+/* =====================================================
+   FASE COMPLETA
+===================================================== */
+
+function levelComplete(){
+
+ if(!gameRunning)return;
+
+ gameRunning=false;
+ boardLocked=true;
+
+ clearGameTimers();
+
+ const progress=
+  getModeProgress();
+
+ const completedLevel=
+  getCurrentLevel();
+
+ completedLevels++;
+
+ const reward=
+  20+
+  completedLevel*5;
+
+ coins+=reward;
+
+ progress.level=
+  completedLevel+1;
+
+ if(
+  progress.level>
+  progress.bestLevel
+ ){
+
+  progress.bestLevel=
+   progress.level;
+
+ }
+
+ progress.resume=null;
+
+ saveGame();
+
+ updateUI();
+
+ modal(
+  "🎉 Fase completa!",
+  `Você completou a fase ${completedLevel}!`,
+  `🪙 +${reward} moedas`,
+  "Próxima fase",
+  ()=>{
+
+   startGame();
+
+  },
+  false
+ );
+
+}
+
+
+/* =====================================================
+   GAME OVER
+===================================================== */
+
+function gameOver(){
+
+ if(!gameRunning)return;
+
+ gameRunning=false;
+ boardLocked=true;
+
+ clearGameTimers();
+
+ const progress=
+  getModeProgress();
+
+ progress.resume=null;
+
+ const lostLevel=
+  getCurrentLevel();
+
+ const lostScore=
+  getCurrentScore();
+
+ saveGame();
+
+ updateUI();
+
+ modal(
+  "⏰ Tempo esgotado!",
+  `Você chegou à fase ${lostLevel}.`,
+  `⭐ Pontuação: ${lostScore}`,
+  "Tentar novamente",
+  ()=>{
+
+   startNewStage();
+
+   gameRunning=true;
+   boardLocked=false;
+   combo=0;
+   firstCard=null;
+   secondCard=null;
+
+   updatePowerButtons();
+   updateTimer();
+   updateGameHeader();
+
+   showScreen("game-screen");
+
+   lastFrame=
+    performance.now();
+
+   requestAnimationFrame(
+    timerLoop
+   );
+
+  },
+  false
+ );
+
+}
+
+
+/* =====================================================
+   SAIR DO JOGO
+===================================================== */
+
+function quitGame(){
+
+ if(!gameRunning){
+
+  showScreen("menu-screen");
+
+  return;
+
+ }
+
+ saveCurrentStage();
+
+ saveGame();
+
+ gameRunning=false;
+ boardLocked=true;
+
+ clearGameTimers();
+
+ firstCard=null;
+ secondCard=null;
+
+ showScreen("menu-screen");
+
+}
+
+
+/* =====================================================
+   LIMPAR TIMERS
+===================================================== */
+
+function clearGameTimers(){
+
+ if(mismatchTimer){
+
+  clearTimeout(
+   mismatchTimer
+  );
+
+  mismatchTimer=null;
+
+ }
+
+ if(powerTimer){
+
+  clearTimeout(
+   powerTimer
+  );
+
+  powerTimer=null;
+
+ }
+
+ freezeUntil=0;
+ slowUntil=0;
+
+}
+
+
+/* =====================================================
+   LOJA
+===================================================== */
+
+const shopItems=[
+
+ {
+  id:"peek",
+  icon:"🩻",
+  name:"Raio-X",
+  description:
+   "Revela as cartas por alguns segundos.",
+  price:35
+ },
+
+ {
+  id:"freeze",
+  icon:"❄️",
+  name:"Congelar",
+  description:
+   "Para o cronômetro durante alguns segundos.",
+  price:45
+ },
+
+ {
+  id:"slow",
+  icon:"🐌",
+  name:"Câmera lenta",
+  description:
+   "Faz o cronômetro passar pela metade.",
+  price:40
+ },
+
+ {
+  id:"hint",
+  icon:"💡",
+  name:"Dica",
+  description:
+   "Mostra um par que possui o mesmo grau.",
+  price:30
+ },
+
+ {
+  id:"shuffle",
+  icon:"🔀",
+  name:"Embaralhar",
+  description:
+   "Muda a posição das cartas que ainda não foram encontradas.",
+  price:25
+ },
+
+ {
+  id:"time",
+  icon:"⏳",
+  name:"+Tempo",
+  description:
+   "Adiciona segundos ao cronômetro.",
+  price:30
+ }
+
+];
+
+
+function updateShop(){
+
+ const container=
+  document.getElementById(
+   "shopContainer"
+  );
+
+ if(!container)return;
+
+ container.innerHTML="";
+
+ shopItems.forEach(item=>{
+
+  const div=
+   document.createElement("div");
+
+  div.className="shop";
+
+  div.innerHTML=`
+
+   <div class="shop-icon">
+    ${item.icon}
+   </div>
+
+   <h3>${item.name}</h3>
+
+   <p>${item.description}</p>
+
+   <div class="inventory">
+    Possui: ${powerUps[item.id]}
+   </div>
+
+   <div class="shop-price">
+    🪙 ${item.price}
+   </div>
+
+   <button
+    class="buy"
+    data-buy="${item.id}"
+   >
+    Comprar
+   </button>
+
+  `;
+
+  container.appendChild(div);
+
+ });
+
+ container
+  .querySelectorAll("[data-buy]")
+  .forEach(button=>{
+
+   button.addEventListener(
+    "click",
+    ()=>{
+
+     buyPower(
+      button.dataset.buy
+     );
+
+    }
+   );
+
+  });
+
+}
+
+
+function buyPower(type){
+
+ const item=
+  shopItems.find(
+   i=>i.id===type
+  );
+
+ if(!item)return;
+
+ if(coins<item.price){
+
+  modal(
+   "🪙 Moedas insuficientes",
+   "Você não possui moedas suficientes para comprar essa habilidade.",
+   `Você tem ${coins} moedas.`,
+   "Entendi"
+  );
+
+  return;
+
+ }
+
+ coins-=item.price;
+
+ powerUps[type]++;
+
+ saveGame();
+
+ updateUI();
+ updateShop();
+
+ document.getElementById(
+  "info"
+ ).textContent=
+  `🛒 Você comprou ${item.name}!`;
+
+}
+
+
+/* =====================================================
+   MISSÕES
+===================================================== */
+
+const missionData=[
+
+ {
+  id:"pairs",
+  icon:"🧩",
+  title:"Primeiros passos",
+  description:
+   "Encontre 10 pares de monômios.",
+  goal:10,
+  getValue:()=>totalPairsFound,
+  reward:50
+ },
+
+ {
+  id:"combo",
+  icon:"🔥",
+  title:"Combo poderoso",
+  description:
+   "Faça um combo de 5 acertos seguidos.",
+  goal:5,
+  getValue:()=>maxCombo,
+  reward:75
+ },
+
+ {
+  id:"levels",
+  icon:"🏆",
+  title:"Subindo de nível",
+  description:
+   "Complete 3 fases.",
+  goal:3,
+  getValue:()=>completedLevels,
+  reward:100
+ }
+
+];
+
+
+function updateMissions(){
+
+ const container=
+  document.getElementById(
+   "missionsContainer"
+  );
+
+ if(!container)return;
+
+ container.innerHTML="";
+
+ missionData.forEach(mission=>{
+
+  const value=
+   Math.max(
+    0,
+    Number(
+     mission.getValue()
+    )||0
+   );
+
+  const progress=
+   Math.min(
+    100,
+    (value/mission.goal)*100
+   );
+
+  const claimed=
+   !!claimedMissions[mission.id];
+
+  const div=
+   document.createElement("div");
+
+  div.className="mission";
+
+  div.innerHTML=`
+
+   <div style="
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+   ">
+
+    <div>
+     <h3>
+      ${mission.icon} ${mission.title}
+     </h3>
+
+     <p style="
+      color:#777;
+      margin-top:5px;
+      font-size:13px;
+     ">
+      ${mission.description}
+     </p>
+    </div>
+
+    <b>
+     ${Math.min(value,mission.goal)}/${mission.goal}
+    </b>
+
+   </div>
+
+   <div class="progress">
+    <div style="
+     width:${progress}%;
+    "></div>
+   </div>
+
+   <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    gap:8px;
+   ">
+
+    <span style="
+     color:#b37d00;
+     font-weight:900;
+     font-size:13px;
+    ">
+     🪙 +${mission.reward}
+    </span>
+
+    ${
+     claimed
+      ?`
+       <button
+        disabled
+        style="
+         background:#2ecc71;
+         color:white;
+        "
+       >
+        ✅ Resgatada
+       </button>
+      `
+      :
+      value>=mission.goal
+       ?`
+        <button
+         class="play"
+         data-claim="${mission.id}"
+        >
+         Resgatar
+        </button>
+       `
+       :`
+        <button
+         disabled
+        >
+         🔒 Bloqueada
+        </button>
+       `
+    }
+
+   </div>
+
+  `;
+
+  container.appendChild(div);
+
+ });
+
+ container
+  .querySelectorAll("[data-claim]")
+  .forEach(button=>{
+
+   button.addEventListener(
+    "click",
+    ()=>claimMission(
+     button.dataset.claim
+    )
+   );
+
+  });
+
+}
+
+
+function claimMission(id){
+
+ if(claimedMissions[id]){
+  return;
+ }
+
+ const mission=
+  missionData.find(
+   m=>m.id===id
+  );
+
+ if(!mission)return;
+
+ const value=
+  Number(
+   mission.getValue()
+  )||0;
+
+ if(value<mission.goal){
+  return;
+ }
+
+ claimedMissions[id]=true;
+
+ coins+=mission.reward;
+
+ saveGame();
+
+ updateUI();
+ updateMissions();
+
+ modal(
+  "🎯 Missão concluída!",
+  mission.title,
+  `🪙 +${mission.reward} moedas`,
+  "Legal!"
+ );
+
+}
+
+
+/* =====================================================
+   ESTATÍSTICAS
+===================================================== */
+
+function updateStats(){
+
+ const progress=
+  getModeProgress();
+
+ document.getElementById(
+  "statMode"
+ ).textContent=
+  MODE_NAMES[mode];
+
+ document.getElementById(
+  "statLevel"
+ ).textContent=
+  getCurrentLevel();
+
+ document.getElementById(
+  "statBest"
+ ).textContent=
+  getCurrentBestLevel();
+
+ document.getElementById(
+  "statScore"
+ ).textContent=
+  getCurrentScore();
+
+ document.getElementById(
+  "statRecord"
+ ).textContent=
+  getCurrentBestScore();
+
+ document.getElementById(
+  "statPairs"
+ ).textContent=
+  totalPairsFound;
+
+ document.getElementById(
+  "statCombo"
+ ).textContent=
+  maxCombo;
+
+ document.getElementById(
+  "statCompleted"
+ ).textContent=
+  completedLevels;
+
+}
+
+
+/* =====================================================
+   APAGAR PROGRESSO
+===================================================== */
+
+function resetProgress(){
+
+ modal(
+  "🗑️ Apagar progresso?",
+  "Isso vai apagar moedas, fases, estatísticas, missões e habilidades compradas.",
+  "",
+  "Apagar tudo",
+  ()=>{
+
+   try{
+
+    localStorage.removeItem(
+     SAVE_KEY
+    );
+
+    localStorage.removeItem(
+     OLD_SAVE_KEY
+    );
+
+    localStorage.removeItem(
+     OLD_SAVE_KEY_2
+    );
+
+    localStorage.removeItem(
+     OLD_SAVE_KEY_3
+    );
+
+    localStorage.removeItem(
+     OLDER_SAVE_KEY
+    );
+
+   }catch(e){}
+
+   coins=0;
+
+   mode="classic";
+
+   modeProgress={
+    classic:createDefaultModeProgress(),
+    rush:createDefaultModeProgress(),
+    marathon:createDefaultModeProgress()
+   };
+
+   totalPairsFound=0;
+   completedLevels=0;
+   maxCombo=0;
+
+   claimedMissions={
+    pairs:false,
+    combo:false,
+    levels:false
+   };
+
+   powerUps={
+    peek:2,
+    freeze:1,
+    slow:1,
+    hint:2,
+    shuffle:1,
+    time:1
+   };
+
+   gameRunning=false;
+
+   clearGameTimers();
+
+   updateModeUI();
+   updateUI();
+   updateStats();
+
+   showScreen(
+    "menu-screen"
+   );
+
+  },
+  true
+ );
+
+}
+
+
+/* =====================================================
+   EVENTOS DO MENU
+===================================================== */
+
+document.getElementById(
+ "playBtn"
+).addEventListener(
+ "click",
+ chooseMode
+);
+
+
+document.getElementById(
+ "learnBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  if(gameRunning)return;
+
+  showScreen(
+   "learn-screen"
+  );
+
+ }
+);
+
+
+document.getElementById(
+ "storeBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  if(gameRunning)return;
+
+  showScreen(
+   "store-screen"
+  );
+
+ }
+);
+
+
+document.getElementById(
+ "moreBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  const box=
+   document.getElementById(
+    "moreButtons"
+   );
+
+  box.classList.toggle(
+   "open"
+  );
+
+ }
+);
+
+
+document.getElementById(
+ "missionsBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  if(gameRunning)return;
+
+  showScreen(
+   "missions-screen"
+  );
+
+ }
+);
+
+
+document.getElementById(
+ "statsBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  if(gameRunning)return;
+
+  showScreen(
+   "stats-screen"
+  );
+
+ }
+);
+
+
+document.getElementById(
+ "controlsBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  if(gameRunning)return;
+
+  showScreen(
+   "controls-screen"
+  );
+
+ }
+);
+
+
+/* =====================================================
+   BOTÃO COMEÇAR MODO
+===================================================== */
+
+document.getElementById(
+ "startModeBtn"
+).addEventListener(
+ "click",
+ startGame
+);
+
+
+document.getElementById(
+ "modeBackBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  showScreen(
+   "menu-screen"
+  );
+
+ }
+);
+
+
+/* =====================================================
+   BOTÕES DO JOGO
+===================================================== */
+
+document.getElementById(
+ "peekBtn"
+).addEventListener(
+ "click",
+ ()=>usePower("peek")
+);
+
+
+document.getElementById(
+ "freezeBtn"
+).addEventListener(
+ "click",
+ ()=>usePower("freeze")
+);
+
+
+document.getElementById(
+ "slowBtn"
+).addEventListener(
+ "click",
+ ()=>usePower("slow")
+);
+
+
+document.getElementById(
+ "hintBtn"
+).addEventListener(
+ "click",
+ ()=>usePower("hint")
+);
+
+
+document.getElementById(
+ "shuffleBtn"
+).addEventListener(
+ "click",
+ ()=>usePower("shuffle")
+);
+
+
+document.getElementById(
+ "timeBtn"
+).addEventListener(
+ "click",
+ ()=>usePower("time")
+);
+
+
+document.getElementById(
+ "quitBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  modal(
+   "🚪 Sair da partida?",
+   "Seu progresso desta fase será salvo para continuar depois.",
+   "",
+   "Sair",
+   ()=>{
+
+    quitGame();
+
+   }
+  );
+
+ }
+);
+
+
+/* =====================================================
+   BOTÕES DE VOLTAR
+===================================================== */
+
+document.getElementById(
+ "storeBack"
+).addEventListener(
+ "click",
+ ()=>showScreen("menu-screen")
+);
+
+
+document.getElementById(
+ "learnBack"
+).addEventListener(
+ "click",
+ ()=>showScreen("menu-screen")
+);
+
+
+document.getElementById(
+ "missionsBack"
+).addEventListener(
+ "click",
+ ()=>showScreen("menu-screen")
+);
+
+
+document.getElementById(
+ "statsBack"
+).addEventListener(
+ "click",
+ ()=>showScreen("menu-screen")
+);
+
+
+document.getElementById(
+ "controlsBack"
+).addEventListener(
+ "click",
+ ()=>showScreen("menu-screen")
+);
+
+
+/* =====================================================
+   PRATICAR
+===================================================== */
+
+document.getElementById(
+ "practiceBtn"
+).addEventListener(
+ "click",
+ ()=>{
+
+  mode="classic";
+
+  const progress=
+   getModeProgress();
+
+  progress.resume=null;
+  progress.level=1;
+  progress.score=0;
+
+  chooseMode();
+
+ }
+);
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+document.getElementById(
+ "resetBtn"
+).addEventListener(
+ "click",
+ resetProgress
+);
+
+
+/* =====================================================
+   TECLADO
+===================================================== */
+
+document.addEventListener(
+ "keydown",
+ event=>{
+
+  const key=
+   event.key.toLowerCase();
+
+  /*
+   * Espaço = jogar
+   */
+
+  if(
+   event.code==="Space"
+  ){
+
+   event.preventDefault();
+
+   if(
+    !gameRunning &&
+    document.getElementById(
+     "menu-screen"
+    ).style.display!=="none"
+   ){
+
+    chooseMode();
+
+   }
+
+   return;
+
+  }
+
+  if(!gameRunning){
+   return;
+  }
+
+  if(key==="r"){
+
+   usePower("peek");
+
+  }
+
+  if(key==="f"){
+
+   usePower("freeze");
+
+  }
+
+  if(key==="s"){
+
+   usePower("slow");
+
+  }
+
+  if(key==="h"){
+
+   usePower("hint");
+
+  }
+
+  if(key==="b"){
+
+   usePower("shuffle");
+
+  }
+
+  if(key==="t"){
+
+   usePower("time");
+
+  }
+
+  if(key==="q"){
+
+   quitGame();
+
+  }
+
+ }
+);
+
+
+/* =====================================================
+   VISIBILIDADE DA PÁGINA
+===================================================== */
+
+document.addEventListener(
+ "visibilitychange",
+ ()=>{
+
+  if(document.hidden){
+
+   if(gameRunning){
+
+    saveGame();
+
+   }
+
+   return;
+
+  }
+
+  if(gameRunning){
+
+   lastFrame=
+    performance.now();
+
+   updateTimer();
+
+  }
+
+ }
+);
+
+
+/* =====================================================
+   SALVAR ANTES DE SAIR
+===================================================== */
+
+window.addEventListener(
+ "beforeunload",
+ ()=>{
+
+  if(gameRunning){
+
+   saveCurrentStage();
+
+  }
+
+  saveGame();
+
+ }
+);
+
+
+/* =====================================================
+   INICIALIZAÇÃO
+===================================================== */
+
+loadGame();
+
+updateModeUI();
+
+updateUI();
+
+showScreen(
+ "menu-screen"
+);
+
+
+/* =====================================================
+   GARANTIA DO TIMER
+===================================================== */
+
+setTimeout(()=>{
+
+ const timerContainer=
+  document.getElementById(
+   "timer-container"
+  );
+
+ const timerBar=
+  document.getElementById(
+   "timer-bar"
+  );
+
+ if(timerContainer){
+
+  timerContainer.style.display=
+   "block";
+
+  timerContainer.style.visibility=
+   "visible";
+
+ }
+
+ if(timerBar){
+
+  timerBar.style.display=
+   "block";
+
+  timerBar.style.visibility=
+   "visible";
+
+ }
+
+ updateTimer();
+
+},100);
+
+
+/* =====================================================
+   FIM DA PARTE 2
+===================================================== */
+
+</script>
+
+</body>
+</html>
